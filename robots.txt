@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vipinpandey128.github.io/portfolio-tracker/sitemap.xml

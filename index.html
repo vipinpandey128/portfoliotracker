@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<!-- ===== Primary SEO ===== -->
+<title>Ledger — Free Portfolio Tracker | Track Stock Profit & Loss Online</title>
+<meta name="description" content="Ledger is a free, browser-based portfolio tracker. Add your stock holdings with quantity, average buy price, and current price to instantly see profit, loss, and overall return — no signup, no server, your data stays on your device.">
+<meta name="keywords" content="portfolio tracker, stock portfolio tracker, free portfolio tracker, profit loss calculator, stock tracker, investment tracker, share market tracker, P&L calculator">
+<meta name="author" content="Vipin Pandey">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://vipinpandey128.github.io/portfolio-tracker/">
+
+<!-- ===== Open Graph (Facebook, LinkedIn, WhatsApp previews) ===== -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ledger — Free Portfolio Tracker">
+<meta property="og:description" content="Track your stock holdings, profit, loss, and overall return for free — right in your browser. No signup required.">
+<meta property="og:url" content="https://vipinpandey128.github.io/portfolio-tracker/">
+<meta property="og:image" content="https://vipinpandey128.github.io/portfolio-tracker/og-image.png">
+<meta property="og:site_name" content="Ledger Portfolio Tracker">
+
+<!-- ===== Twitter Card ===== -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ledger — Free Portfolio Tracker">
+<meta name="twitter:description" content="Track your stock holdings, profit, loss, and overall return for free — right in your browser.">
+<meta name="twitter:image" content="https://vipinpandey128.github.io/portfolio-tracker/og-image.png">
+
+<!-- ===== Misc ===== -->
+<meta name="theme-color" content="#0a0e16">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%237c8aff%22/><text x=%2250%22 y=%2268%22 font-size=%2260%22 font-family=%22sans-serif%22 font-weight=%22800%22 fill=%22%230a0e16%22 text-anchor=%22middle%22>L</text></svg>">
+
+<!-- ===== Structured data so Google understands this is a tool ===== -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Ledger Portfolio Tracker",
+  "url": "https://vipinpandey128.github.io/portfolio-tracker/",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any (runs in browser)",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "description": "A free browser-based portfolio tracker to record stock holdings and track profit, loss, and return."
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0a0e16;
+  --bg-soft:#0d1320;
+  --panel:#111929;
+  --panel-2:#161f33;
+  --border:#212c45;
+  --border-soft:rgba(255,255,255,.06);
+  --text:#eef2fb;
+  --muted:#7c89aa;
+  --muted-dim:#535f7e;
+  --gain:#2ee6a6;
+  --gain-dim:rgba(46,230,166,.12);
+  --loss:#ff5d7a;
+  --loss-dim:rgba(255,93,122,.12);
+  --accent:#7c8aff;
+  --accent-2:#a78bfa;
+  --radius:16px;
+  --radius-lg:22px;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html{ scroll-behavior:smooth; }
+
+body{
+  font-family:'Inter',sans-serif;
+  background:
+    radial-gradient(ellipse 900px 500px at 12% -10%, rgba(124,138,255,.16), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 0%, rgba(167,139,250,.10), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding-bottom:60px;
+}
+
+.mono{ font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+
+/* ---------- Ticker tape (signature element) ---------- */
+.ticker-wrap{
+  width:100%;
+  overflow:hidden;
+  background:linear-gradient(90deg, #0c1220, #101a2e 50%, #0c1220);
+  border-bottom:1px solid var(--border-soft);
+  white-space:nowrap;
+  position:relative;
+}
+.ticker-wrap::before,.ticker-wrap::after{
+  content:"";
+  position:absolute; top:0; bottom:0; width:60px; z-index:2; pointer-events:none;
+}
+.ticker-wrap::before{ left:0; background:linear-gradient(90deg, var(--bg), transparent); }
+.ticker-wrap::after{ right:0; background:linear-gradient(270deg, var(--bg), transparent); }
+.ticker{
+  display:inline-flex;
+  gap:0;
+  padding:11px 0;
+  animation:scroll-left 38s linear infinite;
+}
+.ticker-wrap:hover .ticker{ animation-play-state:paused; }
+.ticker span.tk{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;
+  letter-spacing:.02em;
+  padding:0 22px;
+  border-right:1px solid var(--border-soft);
+  color:var(--muted);
+}
+.ticker span.tk b{ color:var(--text); font-weight:600; margin-right:8px; }
+.ticker span.tk.up{ color:var(--gain); }
+.ticker span.tk.down{ color:var(--loss); }
+.ticker .empty-tk{ padding:0 22px; font-size:12.5px; color:var(--muted-dim); font-family:'JetBrains Mono',monospace;}
+@keyframes scroll-left{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+
+/* ---------- Layout ---------- */
+.container{ max-width:1280px; margin:0 auto; padding:0 36px; }
+
+.header{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  flex-wrap:wrap; gap:18px;
+  padding:38px 0 30px;
+}
+.brand{ display:flex; align-items:center; gap:14px; }
+.brand-mark{
+  width:42px; height:42px; border-radius:11px;
+  background:linear-gradient(150deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Sora',sans-serif; font-weight:800; font-size:17px; color:#0a0e16;
+  box-shadow:0 8px 24px rgba(124,138,255,.35);
+}
+.title{ font-family:'Sora',sans-serif; font-size:28px; font-weight:700; letter-spacing:-.01em; }
+.sub{ color:var(--muted); font-size:13.5px; margin-top:3px; }
+
+.session{
+  text-align:right; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted-dim);
+}
+.session b{ color:var(--muted); font-weight:500; }
+
+/* ---------- Summary cards ---------- */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:16px;
+  margin-bottom:28px;
+}
+.metric{
+  background:linear-gradient(160deg, var(--panel), var(--panel-2));
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-lg);
+  padding:22px 24px;
+  position:relative;
+  overflow:hidden;
+}
+.metric::after{
+  content:""; position:absolute; right:-30px; top:-30px; width:90px; height:90px;
+  border-radius:50%; background:radial-gradient(circle, rgba(124,138,255,.14), transparent 70%);
+}
+.metric small{
+  color:var(--muted); font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+}
+.metric h2{
+  font-family:'JetBrains Mono',monospace; margin-top:12px; font-size:27px; font-weight:600;
+  letter-spacing:-.01em;
+}
+.metric .delta{
+  margin-top:6px; font-size:12.5px; font-family:'JetBrains Mono',monospace; font-weight:500;
+}
+.metric.gain h2, .metric.gain .delta{ color:var(--gain); }
+.metric.loss h2, .metric.loss .delta{ color:var(--loss); }
+
+/* ---------- Panel / form ---------- */
+.card{
+  background:rgba(17,25,41,.7);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-lg);
+  padding:26px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+  margin-bottom:20px;
+}
+
+.card-head{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:18px; flex-wrap:wrap; gap:12px;
+}
+.card-head h3{
+  font-family:'Sora',sans-serif; font-size:15.5px; font-weight:600; color:var(--text);
+}
+.search{
+  background:var(--bg-soft); border:1px solid var(--border);
+  border-radius:11px; padding:9px 14px; color:var(--text); font-size:13.5px;
+  width:220px; outline:none; transition:.2s;
+}
+.search::placeholder{ color:var(--muted-dim); }
+.search:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,138,255,.15); }
+
+.inputGrid{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr auto;
+  gap:12px;
+}
+.field{ display:flex; flex-direction:column; gap:6px; }
+.field label{
+  font-size:11px; color:var(--muted-dim); font-weight:600; letter-spacing:.05em; text-transform:uppercase;
+}
+input{
+  background:var(--bg-soft);
+  border:1px solid var(--border);
+  padding:13px 14px;
+  color:var(--text);
+  border-radius:12px;
+  outline:none;
+  font-size:14px;
+  font-family:'Inter',sans-serif;
+  transition:.18s;
+  width:100%;
+}
+input.mono-input{ font-family:'JetBrains Mono',monospace; }
+input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px rgba(124,138,255,.15);
+}
+input::placeholder{ color:var(--muted-dim); }
+
+button{
+  border:none; cursor:pointer; padding:13px 22px; border-radius:12px;
+  font-weight:600; font-size:14px; font-family:'Inter',sans-serif;
+  transition:.18s;
+}
+.add{
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  color:#0a0e16;
+  align-self:end;
+  box-shadow:0 10px 24px rgba(124,138,255,.28);
+}
+.add:hover{ transform:translateY(-1px); box-shadow:0 14px 30px rgba(124,138,255,.38); }
+.add:active{ transform:translateY(0); }
+
+.error-text{ color:var(--loss); font-size:12.5px; margin-top:10px; display:none; }
+
+/* ---------- Table ---------- */
+.table-wrap{ overflow-x:auto; border-radius:14px; }
+table{ width:100%; border-collapse:collapse; min-width:760px; }
+thead th{
+  padding:13px 16px;
+  text-align:left;
+  color:var(--muted);
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+  cursor:pointer;
+  user-select:none;
+  white-space:nowrap;
+}
+thead th:hover{ color:var(--text); }
+thead th .arrow{ opacity:.45; font-size:10px; margin-left:4px; }
+tbody td{
+  padding:12px 16px;
+  border-bottom:1px solid var(--border-soft);
+  vertical-align:middle;
+}
+tbody tr{ transition:background .15s; }
+tbody tr:hover{ background:rgba(255,255,255,.02); }
+tbody tr:last-child td{ border-bottom:none; }
+
+.stock-name{ display:flex; flex-direction:column; gap:2px; }
+.stock-name .alloc-bar{
+  height:3px; width:100%; background:var(--border); border-radius:2px; overflow:hidden; margin-top:6px;
+}
+.stock-name .alloc-fill{
+  height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:2px;
+}
+.stock-name .alloc-pct{ font-size:10.5px; color:var(--muted-dim); font-family:'JetBrains Mono',monospace; margin-top:3px;}
+
+.edit{
+  width:100%; padding:9px 10px; border-radius:9px;
+  background:transparent; border:1px solid transparent; color:var(--text);
+  font-size:13.5px; transition:.15s;
+}
+.edit:hover{ border-color:var(--border); background:var(--bg-soft); }
+.edit:focus{ border-color:var(--accent); background:var(--bg-soft); box-shadow:0 0 0 3px rgba(124,138,255,.12); }
+.edit.name-edit{ font-family:'Inter',sans-serif; font-weight:500; }
+.edit.num-edit{ font-family:'JetBrains Mono',monospace; }
+
+.badge{
+  padding:6px 12px; border-radius:999px; font-weight:600; font-size:12.5px;
+  display:inline-flex; align-items:center; gap:5px; font-family:'JetBrains Mono',monospace;
+  white-space:nowrap;
+}
+.badge.profit{ background:var(--gain-dim); color:var(--gain); }
+.badge.loss{ background:var(--loss-dim); color:var(--loss); }
+
+.icon-btn{
+  background:transparent; border:1px solid var(--border); color:var(--muted);
+  padding:8px 10px; border-radius:10px; font-size:12.5px;
+}
+.icon-btn:hover{ background:var(--loss-dim); color:var(--loss); border-color:transparent; }
+
+/* empty state */
+.empty{
+  text-align:center; padding:60px 20px; color:var(--muted);
+}
+.empty .glyph{ font-size:30px; margin-bottom:14px; opacity:.5; }
+.empty .et{ font-family:'Sora',sans-serif; font-size:15px; color:var(--text); margin-bottom:6px; font-weight:600;}
+.empty .es{ font-size:13px; color:var(--muted); }
+
+.footnote{
+  margin-top:18px; color:var(--muted-dim); font-size:12px; line-height:1.6;
+  display:flex; gap:8px; align-items:flex-start;
+}
+.footnote svg{ flex-shrink:0; margin-top:1px; }
+
+@media(max-width:860px){
+  .container{ padding:0 18px; }
+  .inputGrid{ grid-template-columns:1fr 1fr; }
+  .add{ grid-column:span 2; }
+  .search{ width:100%; }
+  .card-head{ flex-direction:column; align-items:flex-start; }
+}
+@media(max-width:480px){
+  .inputGrid{ grid-template-columns:1fr; }
+  .add{ grid-column:span 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+  <div class="ticker mono" id="tickerTrack">
+    <span class="empty-tk">Add holdings below to see your live ticker tape →</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-mark">L</div>
+      <div>
+        <div class="title">Ledger</div>
+        <div class="sub">Your holdings, your numbers — saved right in this browser</div>
+      </div>
+    </div>
+    <div class="session">
+      <div><b>Holdings</b> <span id="holdCount">0</span></div>
+      <div id="lastSaved">Not saved yet</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="metric">
+      <small>Total Invested</small>
+      <h2 id="invest" class="mono">₹0</h2>
+    </div>
+    <div class="metric">
+      <small>Current Value</small>
+      <h2 id="current" class="mono">₹0</h2>
+    </div>
+    <div class="metric" id="plCard">
+      <small>Total P/L</small>
+      <h2 id="pl" class="mono">₹0</h2>
+      <div class="delta" id="plDelta">No holdings yet</div>
+    </div>
+    <div class="metric" id="retCard">
+      <small>Overall Return</small>
+      <h2 id="percent" class="mono">0%</h2>
+      <div class="delta" id="retDelta">—</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Add a holding</h3>
+    </div>
+    <div class="inputGrid">
+      <div class="field">
+        <label for="stockName">Share name</label>
+        <input id="stockName" placeholder="e.g. HDFC Bank">
+      </div>
+      <div class="field">
+        <label for="qty">Quantity</label>
+        <input id="qty" class="mono-input" type="number" min="0" step="any" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="buy">Avg buy price</label>
+        <input id="buy" class="mono-input" type="number" min="0" step="any" placeholder="₹0.00">
+      </div>
+      <div class="field">
+        <label for="cur">Current price</label>
+        <input id="cur" class="mono-input" type="number" min="0" step="any" placeholder="₹0.00">
+      </div>
+      <button class="add" onclick="add()">Add holding</button>
+    </div>
+    <div class="error-text" id="errorText">Please fill in every field with a valid value.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Your portfolio</h3>
+      <input class="search" id="searchBox" placeholder="Filter by name…" oninput="render()">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('name')">Stock <span class="arrow" id="arrow-name"></span></th>
+            <th onclick="sortBy('qty')">Qty <span class="arrow" id="arrow-qty"></span></th>
+            <th onclick="sortBy('buy')">Buy <span class="arrow" id="arrow-buy"></span></th>
+            <th onclick="sortBy('cur')">Current <span class="arrow" id="arrow-cur"></span></th>
+            <th onclick="sortBy('pl')">P/L <span class="arrow" id="arrow-pl"></span></th>
+            <th onclick="sortBy('pct')">Return <span class="arrow" id="arrow-pct"></span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="emptyState" style="display:none;">
+      <div class="glyph">◌</div>
+      <div class="et">No holdings yet</div>
+      <div class="es">Add your first stock above to start tracking profit and loss.</div>
+    </div>
+    <div class="footnote">
+      <span>ⓘ</span>
+      <span>Everything here is saved to this browser's local storage — nothing is sent anywhere. If you're viewing this inside a chat preview, storage may not persist between sessions; download the file and open it directly in your browser for it to save permanently.</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let data = [];
+try{
+  data = JSON.parse(localStorage.getItem("ledger_portfolio")) || [];
+}catch(e){ data = []; }
+
+let sortState = { key: null, dir: 1 };
+
+function save(){
+  try{
+    localStorage.setItem("ledger_portfolio", JSON.stringify(data));
+    document.getElementById("lastSaved").innerText = "Saved " + new Date().toLocaleTimeString("en-IN",{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById("lastSaved").innerText = "Storage unavailable in this preview";
+  }
+}
+
+function money(v){
+  const sign = v < 0 ? "-" : "";
+  return sign + "₹" + Math.abs(v).toLocaleString("en-IN",{maximumFractionDigits:2});
+}
+
+function add(){
+  const nameEl = document.getElementById("stockName");
+  const qtyEl = document.getElementById("qty");
+  const buyEl = document.getElementById("buy");
+  const curEl = document.getElementById("cur");
+
+  const item = {
+    name: nameEl.value.trim(),
+    qty: +qtyEl.value,
+    buy: +buyEl.value,
+    cur: +curEl.value
+  };
+  const errorText = document.getElementById("errorText");
+  if(!item.name || !item.qty || item.qty<=0 || !item.buy || item.buy<=0 || !item.cur || item.cur<=0){
+    errorText.style.display = "block";
+    return;
+  }
+  errorText.style.display = "none";
+  data.push(item);
+  save();
+  render();
+  [nameEl,qtyEl,buyEl,curEl].forEach(x=>x.value="");
+  nameEl.focus();
+}
+
+function update(i,k,v){
+  data[i][k] = (k==="name") ? v : +v;
+  save();
+  render();
+}
+
+function remove(i){
+  data.splice(i,1);
+  save();
+  render();
+}
+
+function sortBy(key){
+  if(sortState.key === key){
+    sortState.dir *= -1;
+  }else{
+    sortState.key = key;
+    sortState.dir = 1;
+  }
+  render();
+}
+
+function computed(){
+  return data.map((s,i)=>{
+    const inv = s.qty*s.buy;
+    const cur = s.qty*s.cur;
+    const pl = cur-inv;
+    const pct = inv ? (pl/inv)*100 : 0;
+    return {...s, i, inv, cur, pl, pct};
+  });
+}
+
+function updateArrows(){
+  ["name","qty","buy","cur","pl","pct"].forEach(k=>{
+    const el = document.getElementById("arrow-"+k);
+    if(!el) return;
+    el.innerText = (sortState.key===k) ? (sortState.dir===1 ? "▲" : "▼") : "";
+  });
+}
+
+function render(){
+  let rowsData = computed();
+
+  const q = document.getElementById("searchBox").value.trim().toLowerCase();
+  if(q){
+    rowsData = rowsData.filter(r=>r.name.toLowerCase().includes(q));
+  }
+
+  if(sortState.key){
+    rowsData.sort((a,b)=>{
+      let av=a[sortState.key], bv=b[sortState.key];
+      if(typeof av === "string"){ av=av.toLowerCase(); bv=bv.toLowerCase(); }
+      if(av<bv) return -1*sortState.dir;
+      if(av>bv) return 1*sortState.dir;
+      return 0;
+    });
+  }
+  updateArrows();
+
+  const totalCurrentAll = computed().reduce((a,r)=>a+r.cur,0);
+
+  document.getElementById("holdCount").innerText = data.length;
+  document.getElementById("emptyState").style.display = rowsData.length ? "none" : "block";
+  document.querySelector(".table-wrap").style.display = rowsData.length ? "block" : "none";
+
+  let html = "";
+  rowsData.forEach(r=>{
+    const allocPct = totalCurrentAll ? (r.cur/totalCurrentAll*100) : 0;
+    html += `
+    <tr>
+      <td>
+        <div class="stock-name">
+          <input class="edit name-edit" value="${escapeAttr(r.name)}" onchange="update(${r.i},'name',this.value)">
+          <div class="alloc-bar"><div class="alloc-fill" style="width:${allocPct.toFixed(1)}%"></div></div>
+          <div class="alloc-pct">${allocPct.toFixed(1)}% of portfolio</div>
+        </div>
+      </td>
+      <td><input class="edit num-edit mono" type="number" value="${r.qty}" onchange="update(${r.i},'qty',this.value)"></td>
+      <td><input class="edit num-edit mono" type="number" value="${r.buy}" onchange="update(${r.i},'buy',this.value)"></td>
+      <td><input class="edit num-edit mono" type="number" value="${r.cur}" onchange="update(${r.i},'cur',this.value)"></td>
+      <td><span class="badge ${r.pl>=0?'profit':'loss'}">${r.pl>=0?'▲':'▼'} ${money(Math.abs(r.pl))}</span></td>
+      <td><span class="badge ${r.pl>=0?'profit':'loss'}">${r.pct>=0?'+':''}${r.pct.toFixed(2)}%</span></td>
+      <td><button class="icon-btn" onclick="remove(${r.i})">Remove</button></td>
+    </tr>`;
+  });
+  document.getElementById("rows").innerHTML = html;
+
+  // summary metrics (always over full dataset, not filtered)
+  const all = computed();
+  const invest = all.reduce((a,r)=>a+r.inv,0);
+  const current = all.reduce((a,r)=>a+r.cur,0);
+  const total = current-invest;
+  const pct = invest ? (total/invest)*100 : 0;
+
+  document.getElementById("invest").innerText = money(invest);
+  document.getElementById("current").innerText = money(current);
+  document.getElementById("pl").innerText = money(total);
+  document.getElementById("percent").innerText = (pct>=0?'+':'')+pct.toFixed(2)+"%";
+
+  const plCard = document.getElementById("plCard");
+  const retCard = document.getElementById("retCard");
+  plCard.classList.remove("gain","loss");
+  retCard.classList.remove("gain","loss");
+  if(all.length){
+    plCard.classList.add(total>=0?"gain":"loss");
+    retCard.classList.add(total>=0?"gain":"loss");
+    document.getElementById("plDelta").innerText = total>=0 ? "Portfolio is up overall" : "Portfolio is down overall";
+    document.getElementById("retDelta").innerText = `Across ${all.length} holding${all.length>1?'s':''}`;
+  }else{
+    document.getElementById("plDelta").innerText = "No holdings yet";
+    document.getElementById("retDelta").innerText = "—";
+  }
+
+  renderTicker(all);
+}
+
+function renderTicker(all){
+  const track = document.getElementById("tickerTrack");
+  if(!all.length){
+    track.innerHTML = `<span class="empty-tk">Add holdings below to see your live ticker tape →</span>`;
+    track.style.animation = "none";
+    return;
+  }
+  const item = r => `<span class="tk ${r.pl>=0?'up':'down'}"><b>${escapeHtml(r.name)}</b>${money(r.cur)} ${r.pl>=0?'▲':'▼'} ${r.pct>=0?'+':''}${r.pct.toFixed(2)}%</span>`;
+  const seq = all.map(item).join("");
+  // duplicate sequence for seamless loop
+  track.innerHTML = seq + seq;
+  track.style.animation = "scroll-left " + Math.max(18, all.length*6) + "s linear infinite";
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){
+  return escapeHtml(s).replace(/`/g,'&#96;');
+}
+
+render();
+</script>
+
+</body>
+</html>
